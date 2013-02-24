@@ -5,25 +5,41 @@ import os
 
 def pid_store(pid_file_path, name):
     os.umask(077) # set umask for pid
-    save_to = os.path.join(pid_file_path, name)
+    pid_path = os.path.join(pid_file_path, name)
 
-    with open(save_to, "w") as f:
+    with open(pid_path, "w") as f:
         f.write(str(os.getpid()))
 
 
 def pid_read(pid_file_path, name):
-    pass
+    pid_path = os.path.join(pid_file_path, name)
 
+    try:
+        with open(pid_path, "r") as f:
+            return int(f.read())
+    except IOError:
+        return -1
 
 def still_running(pid_file_path, name):
-    pass
+    pid = pid_read(pid_file_path, name)
+
+    if pid == -1:
+        # check if the process is still running
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            # this means the process is gone
+            return False
+    else:
+        return False
 
 
 def pid_remove_dead(pid_file_path, name):
-    pass
+    if not still_running(pid_file_path, name):
+        os.remove(os.path.join(pid_file_path, name))
 
-
-def daemonize(pid_path="/var/run"):
+def daemonize(prog_name, pid_path="/var/run"):
     if os.fork() == 0:
         os.setsid()
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
@@ -32,7 +48,8 @@ def daemonize(pid_path="/var/run"):
         if pid != 0:
             os._exit(0)
         else:
-            pid_store(pid_path, "dentata.pid")
+            pid_remove_dead(pid_path, prog_name + ".pid")
+            pid_store(pid_path, prog_name + ".pid")
     else:
         os._exit(0)
 
@@ -61,5 +78,6 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
 
 
 def register_shutdown(handler):
-    pass
+    signal.signal(signal.SIGINT, handler)
+    signal.signal(signal.SIGTERM, handler)
 
