@@ -4,7 +4,7 @@ import signal
 import os
 import log
 
-def make_pid_file_path(name, pid_file_path):
+def make_pid_file_path(name, pid_file_path="/var/run"):
     return os.path.join(pid_file_path, name + ".pid")
 
 def pid_store(name, pid_file_path="/var/run"):
@@ -21,9 +21,7 @@ def pid_read(name, pid_file_path="/var/run"):
 
     try:
         with open(pid_path, "r") as f:
-            pid = int(f.read())
-            log.warn("Old process running at %d" % pid)
-            return pid
+            return int(f.read())
     except IOError:
         return -1
 
@@ -37,7 +35,7 @@ def still_running(name, pid_file_path="/var/run"):
         # check if the process is still running with kill
         try:
             os.kill(pid, 0)
-            log.warn("Process really running at %d" % pid)
+            log.debug("Process running at %d" % pid)
             return True
         except OSError:
             # this means the process is gone
@@ -46,9 +44,21 @@ def still_running(name, pid_file_path="/var/run"):
             return False
 
 
+def kill_server(name, pid_file_path="/var/run", sig=signal.SIGINT):
+    if still_running(name, pid_file_path=pid_file_path):
+        pid = pid_read(name, pid_file_path=pid_file_path)
+        os.kill(pid, signal.SIGINT)
+
+
+def reload_server(name, pid_file_path="/var/run"):
+    kill_server(name, pid_file_path=pid_file_path, sig=signal.SIGHUP)
+
+
 def pid_remove_dead(name, pid_file_path="/var/run"):
     if not still_running(name, pid_file_path=pid_file_path):
-        os.remove(make_pid_file_path(name, pid_file_path))
+        pid_file = make_pid_file_path(name, pid_file_path)
+        if os.path.exists(pid_file):
+            os.remove(pid_file)
 
 
 def daemonize(prog_name, pid_path="/var/run"):
@@ -77,6 +87,8 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     # Get the uid/gid from the name
     running_uid = pwd.getpwnam(uid_name).pw_uid
     running_gid = grp.getgrnam(gid_name).gr_gid
+
+    log.info("Dropping pivs to UID %r GID %r" % (running_uid, running_gid))
 
     # Remove group privileges
     os.setgroups([])
