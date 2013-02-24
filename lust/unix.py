@@ -2,42 +2,53 @@ import pwd
 import grp
 import signal
 import os
+import log
 
-def pid_store(pid_file_path, name):
+def make_pid_file_path(name, pid_file_path):
+    return os.path.join(pid_file_path, name + ".pid")
+
+def pid_store(name, pid_file_path="/var/run"):
     os.umask(077) # set umask for pid
-    pid_path = os.path.join(pid_file_path, name)
+    pid_path = make_pid_file_path(name, pid_file_path)
 
     with open(pid_path, "w") as f:
         f.write(str(os.getpid()))
 
 
-def pid_read(pid_file_path, name):
-    pid_path = os.path.join(pid_file_path, name)
+def pid_read(name, pid_file_path="/var/run"):
+    pid_path = make_pid_file_path(name, pid_file_path)
+    log.debug("Checking pid path: %s" % pid_path)
 
     try:
         with open(pid_path, "r") as f:
-            return int(f.read())
+            pid = int(f.read())
+            log.warn("Old process running at %d" % pid)
+            return pid
     except IOError:
         return -1
 
-def still_running(pid_file_path, name):
-    pid = pid_read(pid_file_path, name)
+def still_running(name, pid_file_path="/var/run"):
+    pid = pid_read(name, pid_file_path=pid_file_path)
 
     if pid == -1:
-        # check if the process is still running
+        log.debug("Returned pid not running at %s" % pid)
+        return False
+    else:
+        # check if the process is still running with kill
         try:
             os.kill(pid, 0)
+            log.warn("Process really running at %d" % pid)
             return True
         except OSError:
             # this means the process is gone
+            log.warn("Stale pid file %r has %d pid." % (
+                make_pid_file_path(name, pid_file_path), pid))
             return False
-    else:
-        return False
 
 
-def pid_remove_dead(pid_file_path, name):
-    if not still_running(pid_file_path, name):
-        os.remove(os.path.join(pid_file_path, name))
+def pid_remove_dead(name, pid_file_path="/var/run"):
+    if not still_running(name, pid_file_path=pid_file_path):
+        os.remove(make_pid_file_path(name, pid_file_path))
 
 
 def daemonize(prog_name, pid_path="/var/run"):
@@ -49,8 +60,8 @@ def daemonize(prog_name, pid_path="/var/run"):
         if pid != 0:
             os._exit(0)
         else:
-            pid_remove_dead(pid_path, prog_name + ".pid")
-            pid_store(pid_path, prog_name + ".pid")
+            pid_remove_dead(prog_name, pid_path)
+            pid_store(prog_name, pid_path)
     else:
         os._exit(0)
 
