@@ -2,6 +2,8 @@ import sys
 import os
 import time
 
+DEBUG=False
+
 # need a simple thread lock on this, or just fuck it
 
 def setup(log_path):
@@ -37,6 +39,11 @@ def info(msg):
 
 
 def debug(msg):
-    print "[%s] DEBUG: %s" % (time.ctime(), msg)
+    if not DEBUG:
+        print "[%s] DEBUG: %s" % (time.ctime(), msg)
 
+
+def set_debug_level(on):
+    global DEBUG
+    DEBUG=on
 
