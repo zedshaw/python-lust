@@ -39,6 +39,7 @@ def pid_remove_dead(pid_file_path, name):
     if not still_running(pid_file_path, name):
         os.remove(os.path.join(pid_file_path, name))
 
+
 def daemonize(prog_name, pid_path="/var/run"):
     if os.fork() == 0:
         os.setsid()
