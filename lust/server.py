@@ -1,25 +1,38 @@
-from lust import unix, log
+from lust import unix, log, config
 import sys
 import os
 
 class Simple(object):
 
     def __init__(self, name, run_base="/var/run", log_dir="/var/log",
-                 uid="nobody", gid="nogroup"):
+                 uid="nobody", gid="nogroup", config_base="/etc"):
         self.name = name
-        self.run_dir = os.path.join(run_base, self.name)
-        self.log_file = os.path.join(log_dir, self.name + ".log")
-        self.uid = uid
-        self.gid = gid
+        self.config_file = os.path.join(config_base, self.name + ".conf")
+
+        if os.path.exists(self.config_file):
+            self.config = config.load_ini_file(self.config_file)
+        else:
+            self.config = {}
+
+        self.run_dir = self.config.get(name + '.run_dir',
+                                       os.path.join(run_base, self.name))
+        self.log_file = self.config.get(name + '.log_file',
+                                        os.path.join(log_dir, self.name + ".log"))
+        self.uid = self.config.get(name + '.uid', uid)
+        self.gid = self.config.get(name + '.gid', gid)
+
 
     def before_daemonize(self, args):
         pass
 
+
     def before_jail(self, args):
         pass
 
+
     def before_drop_privs(self, args):
         pass
+
 
     def start(self, args):
         pass

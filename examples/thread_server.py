@@ -21,12 +21,18 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 class ThreadDaemon(server.Simple):
 
     def before_drop_privs(self, args):
-        if not args:
+        HOST = "0.0.0.0"
+        if self.config:
+            ports = list(int(x) for x in
+                         self.config['threadserver.ports'].split())
+        else:
+            ports = list(int(x) for x in args)
+
+        log.debug("Ports %r" % ports)
+
+        if not ports:
             log.error("You need to list some ports.")
             sys.exit(1)
-
-        HOST = "0.0.0.0"
-        ports = (int(x) for x in args)
 
         self.server = None # this gets the last one to do a forever on
 
