@@ -28,3 +28,8 @@ A. Seriously, shut the fuck up.
 Q. Why don't you just use supervisord?
 
 A. Alright. Say it with me. SHUT THE FUCK UP.
+
+Q. Why aren't you using TOML or JSON for config files?
+
+A. Holy mother fuck dude. FUHG GUR SHPX HC!
+
