@@ -4,10 +4,10 @@ import os
 
 class Simple(object):
 
-    def __init__(self, name, run_dir="/var/run", log_dir="/var/log",
+    def __init__(self, name, run_base="/var/run", log_dir="/var/log",
                  uid="nobody", gid="nogroup"):
         self.name = name
-        self.run_dir = run_dir
+        self.run_dir = os.path.join(run_base, self.name)
         self.log_file = os.path.join(log_dir, self.name + ".log")
         self.uid = uid
         self.gid = gid
