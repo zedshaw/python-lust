@@ -29,8 +29,9 @@ Q. Why don't you just use supervisord?
 
 A. Alright. Say it with me. SHUT THE FUCK UP.
 
-Q. Okay, if not supervisord, why not daemontools or runit or s6?  They
-don't require PID file management and take care of the logs too.
+Q. If you won't use supervisord, then why not daemontools or runit or
+s6? They don't require PID file management and take care of the logs
+too.
 
 A. Seriously? At least supervisord is python. SHUT THE FUCK **UP**.
 
