@@ -47,7 +47,7 @@ class ThreadDaemon(server.Simple):
 
 
 if __name__ == "__main__":
-
-    server = ThreadDaemon("threadserver", uid='zedshaw', gid='staff')
+    # if you're on OSX then change this to whatever user nd group
+    server = ThreadDaemon("threadserver", uid='nobody', gid='nogroup')
     server.run(sys.argv)
 
