@@ -61,7 +61,7 @@ def pid_remove_dead(name, pid_file_path="/var/run"):
             os.remove(pid_file)
 
 
-def daemonize(prog_name, pid_path="/var/run"):
+def daemonize(prog_name, pid_file_path="/var/run"):
     if os.fork() == 0:
         os.setsid()
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
@@ -70,14 +70,15 @@ def daemonize(prog_name, pid_path="/var/run"):
         if pid != 0:
             os._exit(0)
         else:
-            pid_remove_dead(prog_name, pid_path)
-            pid_store(prog_name, pid_path)
+            pid_remove_dead(prog_name, pid_file_path=pid_file_path)
+            pid_store(prog_name, pid_file_path=pid_file_path)
     else:
         os._exit(0)
 
 
 def chroot_jail(root="/tmp"):
     os.chroot(root)
+    os.chdir("/")
 
 
 def drop_privileges(uid_name='nobody', gid_name='nogroup'):

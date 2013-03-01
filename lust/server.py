@@ -5,6 +5,7 @@ import os
 class Simple(object):
 
     def __init__(self, name, run_base="/var/run", log_dir="/var/log",
+                 pid_file_path="/var/run",
                  uid="nobody", gid="nogroup", config_base="/etc"):
         self.name = name
         self.config_file = os.path.join(config_base, self.name + ".conf")
@@ -16,6 +17,7 @@ class Simple(object):
 
         self.run_dir = self.config.get(name + '.run_dir',
                                        os.path.join(run_base, self.name))
+        self.pid_path = self.config.get(name + '.pid_path', pid_file_path)
         self.log_file = self.config.get(name + '.log_file',
                                         os.path.join(log_dir, self.name + ".log"))
         self.uid = self.config.get(name + '.uid', uid)
@@ -40,27 +42,26 @@ class Simple(object):
 
     def stop(self, args):
         log.info("Stopping server.")
-        unix.kill_server(self.name)
+        unix.kill_server(self.name, pid_file_path=self.pid_path)
 
 
     def status(self, args):
-        print "Server running at pid %d" % unix.pid_read(self.name)
+        print "Server running at pid %d" % unix.pid_read(self.name,
+                                                         pid_file_path=self.pid_path)
 
 
     def shutdown(self, signal):
         pass
 
 
-    def clear_pid(self):
-        try:
-            os.remove(unix.make_pid_file_path(self.name))
-        except OSError:
-            pass
-        sys.exit(0)
-
 
     def parse_cli(self, args):
         args.pop(0)
+
+        if not args:
+            log.error("Need a command like start, stop, status.")
+            sys.exit(1)
+
         return args[0], args[1:]
 
 
@@ -70,15 +71,15 @@ class Simple(object):
 
         self.before_daemonize(args)
 
-        if unix.still_running(self.name):
+        if unix.still_running(self.name, pid_file_path=self.pid_path):
             log.error("%s still running. Aborting." % self.name)
             sys.exit(1)
         else:
-            unix.daemonize(self.name)
+            unix.daemonize(self.name, pid_file_path=self.pid_path)
 
         def shutdown_handler(signal, frame):
             self.shutdown(signal)
-            self.clear_pid()
+            sys.exit(0)
 
         unix.register_shutdown(shutdown_handler)
 
@@ -89,9 +90,9 @@ class Simple(object):
 
         self.before_drop_privs(args)
 
-        log.info("Server %s running." % self.name)
         unix.drop_privileges(uid_name=self.uid, gid_name=self.gid)
 
+        log.info("Server %s running." % self.name)
         self.start(args)
 
 

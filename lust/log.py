@@ -18,7 +18,6 @@ def setup(log_path):
             pass # ignore these
 
     fd = os.open(log_path, os.O_RDWR | os.O_CREAT)
-    assert fd == 0, "Failed to get fd 0 as the official output."
 
     os.dup2(0, 1)
     os.dup2(0, 2)
