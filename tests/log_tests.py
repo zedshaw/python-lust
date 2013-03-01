@@ -1,15 +1,18 @@
 from nose.tools import *
 from lust import log
-from mock import *
+from mock import patch
 
 
 @patch("sys.stdout")
 @patch("sys.stderr")
-@patch("os.close")
 @patch("os.dup2")
 @patch("os.fdopen")
+@patch("os.close")
 def test_setup(*calls):
     log.setup("tests/test.log")
+    # weird but 0 is os_close, and we want to force an exception
+    calls[0].side_effect=OSError
+
     # confirm the last three in the @path list are called
     for i in calls[0:3]:
         assert_true(i.called, "Did not call %r" % i)

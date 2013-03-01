@@ -1,6 +1,6 @@
 from nose.tools import *
 from lust import unix
-from mock import *
+from mock import patch, Mock
 import os
 
 # These tests use mocks to avoid system calls, with testing that the
@@ -29,6 +29,12 @@ def test_pid_read():
 def test_still_running():
     unix.pid_store("test_still_running", pid_file_path="/tmp")
     assert_true(unix.still_running("test_still_running", pid_file_path="/tmp"))
+    os.unlink("/tmp/test_still_running.pid")
+
+@patch("os.kill", new=Mock(side_effect=OSError))
+def test_still_running_stale_process():
+    unix.pid_store("test_still_running", pid_file_path="/tmp")
+    assert_false(unix.still_running("test_still_running", pid_file_path="/tmp"))
     os.unlink("/tmp/test_still_running.pid")
 
 @patch("lust.unix.still_running", new=Mock(return_value=False))
@@ -94,6 +100,17 @@ def test_drop_privileges(os_getuid, *calls):
     # now just confirm all the remaining system calls were called
     for i in calls:
         assert_true(i.called, "Failed to call %r" % i)
+
+
+@patch("os.getuid")
+@patch("pwd.getpwnam")
+def test_drop_privileges_not_root(pwd_getpwnam, os_getuid):
+    # fakes out os.getuid to claim it's running as root
+    os_getuid.return_value = 1000
+    unix.drop_privileges()
+
+    assert_true(os_getuid.called)
+    assert_false(pwd_getpwnam.called)
 
 @patch("signal.signal")
 def test_register_shutdown(signal_signal):

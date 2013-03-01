@@ -1,6 +1,5 @@
 from nose.tools import *
 from lust import unix
-from mock import *
 import os
 from time import sleep
 
