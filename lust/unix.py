@@ -47,7 +47,7 @@ def still_running(name, pid_file_path="/var/run"):
 def kill_server(name, pid_file_path="/var/run", sig=signal.SIGINT):
     if still_running(name, pid_file_path=pid_file_path):
         pid = pid_read(name, pid_file_path=pid_file_path)
-        os.kill(pid, signal.SIGINT)
+        os.kill(pid, sig)
 
 
 def reload_server(name, pid_file_path="/var/run"):
