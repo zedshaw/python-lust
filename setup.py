@@ -13,7 +13,7 @@ config = {
      'version': '0.1',
      'scripts': [],
      'install_requires': [],
-     'packages': ['lust', 'lust.unix', 'lust.log'],
+     'packages': ['lust'],
      'name': 'python-lust'
 }
 
