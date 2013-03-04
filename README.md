@@ -50,8 +50,8 @@ each:
 * __daemonize__ -- C has a function for this, but in Python you effectively do a
     double _os.fork_ call.
 * __chroot__ -- This is a function call for the OS that forces the process to
-    only have a target directory as its root.  Of you chroot to /var/run/stuff/
-    then in that process any path starts with "/", but is actually forced to
+    only have a target directory as its root.  If you chroot to /var/run/stuff/
+    then in that process any path starting with "/" is actually forced to
     here.  It effectively tricks the process into thinking this directory contains
     all the files it will ever see.
 * __chdir("/")__ -- For some idiotic reason this isn't done for you, even though 
