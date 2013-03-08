@@ -7,7 +7,7 @@ from mock import patch
 @patch("sys.stderr")
 @patch("os.dup2")
 @patch("os.fdopen")
-@patch("os.close")
+@patch("os.closerange")
 def test_setup(*calls):
     log.setup("tests/test.log")
     # weird but 0 is os_close, and we want to force an exception

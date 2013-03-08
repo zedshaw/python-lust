@@ -11,11 +11,7 @@ def setup(log_path):
     with open(log_path, 'a+') as f:
         f.write("[%s] INFO: Log opened.\n" % time.ctime())
 
-    for fd in range(0, 1024):
-        try:
-            os.close(fd)
-        except OSError:
-            pass # ignore these
+    os.closerange(0, 1024)
 
     fd = os.open(log_path, os.O_RDWR | os.O_CREAT)
 
