@@ -10,5 +10,7 @@ def load_ini_file(file_name, defaults={}):
         for key, value in config.items(section):
             results[section + '.' + key] = value
 
+    results.update(defaults)
+
     return results
 
