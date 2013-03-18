@@ -110,8 +110,11 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     os.umask(077)
 
 
-def register_shutdown(handler):
-    signal.signal(signal.SIGINT, handler)
-    signal.signal(signal.SIGTERM, handler)
+def register_signal(handler, signals):
+    for sig in signals:
+        signal.signal(sig, handler)
 
+
+def register_shutdown(handler):
+    register_signal(handler, signals=[signal.SIGINT, signal.SIGTERM])
 
