@@ -82,7 +82,8 @@ To make the chroot work though you need to satisfy these requirements:
 * No device files.
 
 A way to look at this is if you put anything from /etc, /dev, or a binary file,
-then watch out.  It gets more complicated than that, but to be safe, just
+in the chroot target directory, then an attacker can use those to bust out of
+the chroot jail.  It gets more complicated than that, but to be safe, just
 don't put them there.
 
 There's also the problem that it's not clear what Python's race conditions are
