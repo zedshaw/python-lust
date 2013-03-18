@@ -1,7 +1,9 @@
 from nose.tools import *
-from lust import unix
+from lust import unix, log
 from mock import patch, Mock
+import signal
 import os
+import time
 
 # These tests use mocks to avoid system calls, with testing that the
 # functionality works in the tests/server_tests.py using small server
@@ -76,6 +78,20 @@ def test_daemonize(os__exit, *calls):
 
     # should not be calling exit
     assert_false(os__exit.called)
+
+def test_daemonize_dont_exit():
+    def callme():
+        log.setup('/tmp/test_daemonize_no_exit.log')
+        for i in range(0, 20):
+            log.info("I ran!")
+            time.sleep(1)
+
+    pid = unix.daemonize('test_daemonize_no_exit', pid_file_path="/tmp",
+                         dont_exit=True, to_call=callme)
+
+    assert_true(os.path.exists('/tmp/test_daemonize_no_exit.pid'))
+    time.sleep(1)
+    os.kill(int(pid), signal.SIGKILL)
 
 
 @patch("os.chroot")

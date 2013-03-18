@@ -3,6 +3,7 @@ import grp
 import signal
 import os
 import log
+import time
 
 def make_pid_file_path(name, pid_file_path="/var/run"):
     return os.path.join(pid_file_path, name + ".pid")
@@ -61,8 +62,10 @@ def pid_remove_dead(name, pid_file_path="/var/run"):
             os.remove(pid_file)
 
 
-def daemonize(prog_name, pid_file_path="/var/run"):
-    if os.fork() == 0:
+def daemonize(prog_name, pid_file_path="/var/run", dont_exit=False, to_call=None):
+    child_pid = os.fork()
+
+    if child_pid == 0:
         os.setsid()
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
         pid = os.fork()
@@ -72,6 +75,11 @@ def daemonize(prog_name, pid_file_path="/var/run"):
         else:
             pid_remove_dead(prog_name, pid_file_path=pid_file_path)
             pid_store(prog_name, pid_file_path=pid_file_path)
+
+            if to_call: return to_call()
+
+    elif dont_exit:
+        return child_pid
     else:
         os._exit(0)
 
@@ -105,4 +113,5 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
 def register_shutdown(handler):
     signal.signal(signal.SIGINT, handler)
     signal.signal(signal.SIGTERM, handler)
+
 
