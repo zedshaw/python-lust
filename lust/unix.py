@@ -62,9 +62,7 @@ def pid_remove_dead(name, pid_file_path="/var/run"):
 
 
 def daemonize(prog_name, pid_file_path="/var/run", dont_exit=False, to_call=None):
-    child_pid = os.fork()
-
-    if child_pid == 0:
+    if os.fork() == 0:
         os.setsid()
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
         pid = os.fork()
@@ -78,7 +76,7 @@ def daemonize(prog_name, pid_file_path="/var/run", dont_exit=False, to_call=None
             if to_call: return to_call()
 
     elif dont_exit:
-        return child_pid
+        return True
     else:
         os._exit(0)
 

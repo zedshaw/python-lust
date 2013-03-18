@@ -82,16 +82,14 @@ def test_daemonize(os__exit, *calls):
 def test_daemonize_dont_exit():
     def callme():
         log.setup('/tmp/test_daemonize_no_exit.log')
-        for i in range(0, 20):
+        for i in range(0, 3):
             log.info("I ran!")
             time.sleep(1)
 
-    pid = unix.daemonize('test_daemonize_no_exit', pid_file_path="/tmp",
+    unix.daemonize('test_daemonize_no_exit', pid_file_path="/tmp",
                          dont_exit=True, to_call=callme)
 
     assert_true(os.path.exists('/tmp/test_daemonize_no_exit.pid'))
-    time.sleep(1)
-    os.kill(int(pid), signal.SIGKILL)
 
 
 @patch("os.chroot")
