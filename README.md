@@ -39,7 +39,7 @@ attacked and give up a remote shell or access, is jailed off into a useless
 directory that restricts the attacker's access.  This isn't foolproof, but is
 handy.
 
-A scondary purpose is that using a chroot eliminates all path traversal bugs.
+A secondary purpose is that using a chroot eliminates all path traversal bugs.
 These are the bugs where you hit a webserver asking for /../../../../etc/passwd
 and you get the server's password list.  By doing a chroot that path will stay
 within the server's jail area and won't go anywhere.
