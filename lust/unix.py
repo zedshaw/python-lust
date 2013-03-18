@@ -3,7 +3,6 @@ import grp
 import signal
 import os
 import log
-import time
 
 def make_pid_file_path(name, pid_file_path="/var/run"):
     return os.path.join(pid_file_path, name + ".pid")
