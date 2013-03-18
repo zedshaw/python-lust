@@ -10,7 +10,7 @@ config = {
     'url': 'http://pypi.python.org/pypi/python-lust',
     'download_url': 'http://pypi.python.org/pypi/python-lust',
     'author_email': 'zedshaw@zedshaw.com',
-     'version': '1.0.2',
+     'version': '1.0.3',
      'scripts': [],
      'install_requires': [],
      'packages': ['lust'],
