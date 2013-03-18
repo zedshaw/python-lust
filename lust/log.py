@@ -18,7 +18,7 @@ def setup(log_path):
     os.dup2(0, 1)
     os.dup2(0, 2)
 
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'a+', 0)
+    sys.stdout = os.fdopen(fd, 'a+', 0)
     sys.stderr = sys.stdout
 
 def warn(msg):
