@@ -23,6 +23,8 @@ class Simple(object):
         self.uid = self.config.get(name + '.uid', uid)
         self.gid = self.config.get(name + '.gid', gid)
 
+        self.unum, self.gnum = unix.get_user_info(uid, gid)
+
 
     def before_daemonize(self, args):
         pass
@@ -90,7 +92,7 @@ class Simple(object):
 
         self.before_drop_privs(args)
 
-        unix.drop_privileges(uid_name=self.uid, gid_name=self.gid)
+        unix.drop_privileges(self.unum, self.gnum)
 
         log.info("Server %s running." % self.name)
         self.start(args)
