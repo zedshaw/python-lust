@@ -4,8 +4,6 @@ import sys
 from lust import log, server
 
 
-RUN_DIR="/var/run/threadserver"
-
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     allow_reuse_address = True
 
