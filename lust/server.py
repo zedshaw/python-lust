@@ -22,7 +22,7 @@ class Simple(object):
             log.warn("No config file at %s, using defaults." % self.config_file)
             self.config = {}
 
-       self.run_dir = self.config.get(name + '.run_dir',
+        self.run_dir = self.config.get(name + '.run_dir',
                                        os.path.join(run_base, self.name))
         self.pid_path = self.config.get(name + '.pid_path', pid_file_path)
         self.log_file = self.config.get(name + '.log_file',
