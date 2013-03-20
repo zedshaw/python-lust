@@ -6,16 +6,23 @@ class Simple(object):
 
     def __init__(self, name, run_base="/var/run", log_dir="/var/log",
                  pid_file_path="/var/run",
-                 uid="nobody", gid="nogroup", config_base="/etc"):
+                 uid="nobody", gid="nogroup", config_base="/etc",
+                 config_name=None):
         self.name = name
-        self.config_file = os.path.join(config_base, self.name + ".conf")
+        self.config_name = config_name or name
+
+        self.config_file = os.path.join(config_base, self.config_name + ".conf")
+        log.debug("Config file at %s" % self.config_file)
 
         if os.path.exists(self.config_file):
             self.config = config.load_ini_file(self.config_file)
+            log.debug("Loading config file %s contains %r" % (self.config_file,
+                                                              self.config))
         else:
+            log.warn("No config file at %s, using defaults." % self.config_file)
             self.config = {}
 
-        self.run_dir = self.config.get(name + '.run_dir',
+       self.run_dir = self.config.get(name + '.run_dir',
                                        os.path.join(run_base, self.name))
         self.pid_path = self.config.get(name + '.pid_path', pid_file_path)
         self.log_file = self.config.get(name + '.log_file',
