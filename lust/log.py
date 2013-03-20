@@ -3,23 +3,28 @@ import os
 import time
 
 DEBUG=False
+SETUP=False
 
 # need a simple thread lock on this, or just fuck it
 
 def setup(log_path):
-    # test we can open for writing
-    with open(log_path, 'a+') as f:
-        f.write("[%s] INFO: Log opened.\n" % time.ctime())
+    global SETUP
 
-    os.closerange(0, 1024)
+    if not SETUP:
+        # test we can open for writing
+        with open(log_path, 'a+') as f:
+            f.write("[%s] INFO: Log opened.\n" % time.ctime())
 
-    fd = os.open(log_path, os.O_RDWR | os.O_CREAT)
+        os.closerange(0, 1024)
 
-    os.dup2(0, 1)
-    os.dup2(0, 2)
+        fd = os.open(log_path, os.O_RDWR | os.O_CREAT)
 
-    sys.stdout = os.fdopen(fd, 'a+', 0)
-    sys.stderr = sys.stdout
+        os.dup2(0, 1)
+        os.dup2(0, 2)
+
+        sys.stdout = os.fdopen(fd, 'a+', 0)
+        sys.stderr = sys.stdout
+        SETUP=True
 
 def warn(msg):
     print "[%s] WARN: %s" % (time.ctime(), msg)
