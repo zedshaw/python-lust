@@ -1,4 +1,4 @@
-from lust import unix, log, config
+from . import unix, log, config
 import sys
 import os
 
