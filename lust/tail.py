@@ -8,7 +8,9 @@ def file_rotated(file_name, orig_stat):
         try:
             new_stat = os.stat(file_name)
 
-            if orig_stat.st_ino != new_stat.st_ino:
+            if orig_stat == None:
+                return True, new_stat
+            elif orig_stat.st_ino != new_stat.st_ino:
                 return True, new_stat
             else:
                 return False, orig_stat
@@ -17,9 +19,9 @@ def file_rotated(file_name, orig_stat):
 
 
 def tail_lines(file_name):
+    _, orig_stat = file_rotated(file_name, None)
     log_file = open(file_name)
     log_file.seek(0, os.SEEK_END)
-    orig_stat = os.stat(file_name)
 
     while True:
         line = log_file.readline()
