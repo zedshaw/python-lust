@@ -7,8 +7,10 @@ SETUP=False
 
 # need a simple thread lock on this, or just fuck it
 
-def setup(log_path):
+def setup(log_path, force=False):
     global SETUP
+
+    if force: SETUP=False
 
     if not SETUP:
         # test we can open for writing
