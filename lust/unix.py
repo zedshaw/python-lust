@@ -61,7 +61,20 @@ def pid_remove_dead(name, pid_file_path="/var/run"):
             os.remove(pid_file)
 
 
-def daemonize(prog_name, pid_file_path="/var/run", dont_exit=False, to_call=None):
+def daemonize(prog_name, pid_file_path="/var/run", dont_exit=False, main=None):
+    """
+    This will do the fork dance to daemonize the Python script.  You have a
+    couple options in using this.
+    
+    1) Call it with just a prog_name and the current script forks like normal
+    then continues running.
+
+    2) Add dont_exit=True and it will both fork a new process *and* keep the
+    parent.
+
+    3) Set main to a function and that function will become the new main method
+    of the process, and the process will exit when that function ends.
+    """
     if os.fork() == 0:
         os.setsid()
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
@@ -73,7 +86,9 @@ def daemonize(prog_name, pid_file_path="/var/run", dont_exit=False, to_call=None
             pid_remove_dead(prog_name, pid_file_path=pid_file_path)
             pid_store(prog_name, pid_file_path=pid_file_path)
 
-            if to_call: return to_call()
+            if main: 
+                main()
+                os._exit(0)
 
     elif dont_exit:
         return True

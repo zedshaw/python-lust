@@ -81,29 +81,23 @@ def test_daemonize(os__exit, *calls):
     assert_false(os__exit.called)
 
 def test_daemonize_dont_exit():
-    def callme():
-        log.SETUP=False
-        log.setup('/tmp/test_daemonize_no_exit.log')
-        for i in range(0, 20):
+    os.unlink('/tmp/test_daemonize_no_exit.log')
+    os.unlink('/tmp/test_daemonize_no_exit.pid')
+
+    def main():
+        """This will exit the daemon after 4 seconds."""
+        log.setup('/tmp/test_daemonize_no_exit.log', force=True)
+        for i in range(0, 4):
             log.info("I ran!")
             time.sleep(1)
 
     unix.daemonize('test_daemonize_no_exit', pid_file_path="/tmp",
-                         dont_exit=True, to_call=callme)
-
-    assert_true(os.path.exists('/tmp/test_daemonize_no_exit.pid'))
+                         dont_exit=True, main=main)
 
     while not unix.still_running('test_daemonize_no_exit', pid_file_path='/tmp'):
         time.sleep(1)
 
-    unix.kill_server('test_daemonize_no_exit', pid_file_path="/tmp",
-                     sig=signal.SIGKILL)
-
-    while unix.still_running('test_daemonize_no_exit', pid_file_path='/tmp'):
-        time.sleep(1)
-
-    assert_false(unix.still_running('test_daemonize_no_exit',
-                                    pid_file_path='/tmp'), "Forked tester didn't exit.")
+    assert_true(os.path.exists('/tmp/test_daemonize_no_exit.pid'))
 
 
 @patch("os.chroot")
