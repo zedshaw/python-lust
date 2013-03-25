@@ -34,7 +34,7 @@ class SimpleDaemon(server.Simple):
 
 if __name__ == "__main__":
     # if you're on OSX then change this to whatever user nd group
-    server = SimpleDaemon("simpledaemon", uid='zedshaw', gid='staff', 
+    server = SimpleDaemon("simpledaemon", uid='nobody', gid='nogroup', 
                           pid_file_path=RUN_DIR, run_base=RUN_DIR, log_dir=RUN_DIR)
     server.run(sys.argv)
 

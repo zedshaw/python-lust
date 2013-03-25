@@ -108,6 +108,18 @@ def test_chroot_jail(chroot_jail):
 
 @patch("pwd.getpwnam")
 @patch("grp.getgrnam")
+@patch("os.getuid")
+def test_get_user_info(os_getuid, *calls):
+    # fakes out os.getuid to claim it's running as root
+    os_getuid.return_value = 0
+
+    unix.get_user_info('root', 'root')
+
+    # now just confirm all the remaining system calls were called
+    for i in calls:
+        assert_true(i.called, "Failed to call %r" % i)
+
+
 @patch("os.setgroups")
 @patch("os.setgid")
 @patch("os.setuid")
@@ -117,22 +129,23 @@ def test_drop_privileges(os_getuid, *calls):
     # fakes out os.getuid to claim it's running as root
     os_getuid.return_value = 0
 
-    unix.drop_privileges()
+    unix.drop_privileges(501, 501)
 
     # now just confirm all the remaining system calls were called
     for i in calls:
         assert_true(i.called, "Failed to call %r" % i)
 
 
+@patch("os.setuid")
 @patch("os.getuid")
-@patch("pwd.getpwnam")
-def test_drop_privileges_not_root(pwd_getpwnam, os_getuid):
+def test_drop_privileges_not_root(os_getuid, os_setuid):
     # fakes out os.getuid to claim it's running as root
     os_getuid.return_value = 1000
-    unix.drop_privileges()
+    unix.drop_privileges(501, 501)
 
     assert_true(os_getuid.called)
-    assert_false(pwd_getpwnam.called)
+    assert_false(os_setuid.called)
+
 
 @patch("signal.signal")
 def test_register_shutdown(signal_signal):
