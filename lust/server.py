@@ -29,8 +29,10 @@ class Simple(object):
                                         os.path.join(log_dir, self.name + ".log"))
         self.uid = self.config.get(name + '.uid', uid)
         self.gid = self.config.get(name + '.gid', gid)
+        log.debug("UID and GID are %s:%s" % (self.uid, self.gid))
 
-        self.unum, self.gnum = unix.get_user_info(uid, gid)
+        self.unum, self.gnum = unix.get_user_info(self.uid, self.gid)
+        log.debug("Numeric UID:GID are %d:%d" % (self.unum, self.gnum))
 
 
     def before_daemonize(self, args):
