@@ -81,8 +81,8 @@ def test_daemonize(os__exit, *calls):
     assert_false(os__exit.called)
 
 def test_daemonize_dont_exit():
-    os.unlink('/tmp/test_daemonize_no_exit.log')
-    os.unlink('/tmp/test_daemonize_no_exit.pid')
+    if os.path.exists('/tmp/test_daemonize_no_exit.log'): os.unlink('/tmp/test_daemonize_no_exit.log')
+    if os.path.exists('/tmp/test_daemonize_no_exit.pid'): os.unlink('/tmp/test_daemonize_no_exit.pid')
 
     def main():
         """This will exit the daemon after 4 seconds."""
