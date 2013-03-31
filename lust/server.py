@@ -4,14 +4,14 @@ import os
 
 class Simple(object):
 
-    def __init__(self, name, run_base="/var/run", log_dir="/var/log",
-                 pid_file_path="/var/run",
-                 uid="nobody", gid="nogroup", config_base="/etc",
-                 config_name=None):
-        self.name = name
-        self.config_name = config_name or name
+    name = None
 
-        self.config_file = os.path.join(config_base, self.config_name + ".conf")
+    def __init__(self, run_base="/var/run", log_dir="/var/log",
+                 pid_file_path="/var/run",
+                 uid="nobody", gid="nogroup", config_file=None):
+        assert self.name, "You must set the service's name."
+
+        self.config_file = config_file or os.path.join('/etc', self.config + ".conf")
         log.debug("Config file at %s" % self.config_file)
 
         if os.path.exists(self.config_file):
@@ -22,13 +22,13 @@ class Simple(object):
             log.warn("No config file at %s, using defaults." % self.config_file)
             self.config = {}
 
-        self.run_dir = self.config.get(name + '.run_dir',
+        self.run_dir = self.config.get(self.name + '.run_dir',
                                        os.path.join(run_base, self.name))
-        self.pid_path = self.config.get(name + '.pid_path', pid_file_path)
-        self.log_file = self.config.get(name + '.log_file',
+        self.pid_path = self.config.get(self.name + '.pid_path', pid_file_path)
+        self.log_file = self.config.get(self.name + '.log_file',
                                         os.path.join(log_dir, self.name + ".log"))
-        self.uid = self.config.get(name + '.uid', uid)
-        self.gid = self.config.get(name + '.gid', gid)
+        self.uid = self.config.get(self.name + '.uid', uid)
+        self.gid = self.config.get(self.name + '.gid', gid)
         log.debug("UID and GID are %s:%s" % (self.uid, self.gid))
 
         self.unum, self.gnum = unix.get_user_info(self.uid, self.gid)
@@ -119,4 +119,10 @@ class Simple(object):
         else:
             log.error("Invalid command: %s.  Commands are: start, stop, reload, status.")
             sys.exit(1)
-    
+
+    def get(self, name):
+        """Simple convenience method that just uses the service's configured
+        name to get a config value."""
+
+        return self.config.get(self.name + '.' + name, None)
+

@@ -18,6 +18,8 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
 class ThreadDaemon(server.Simple):
 
+    name = 'threadserver'
+
     def before_drop_privs(self, args):
         HOST = "0.0.0.0"
         if self.config:
@@ -52,6 +54,6 @@ class ThreadDaemon(server.Simple):
 
 if __name__ == "__main__":
     # if you're on OSX then change this to whatever user nd group
-    server = ThreadDaemon("threadserver", uid='nobody', gid='nogroup')
+    server = ThreadDaemon(uid='nobody', gid='nogroup')
     server.run(sys.argv)
 

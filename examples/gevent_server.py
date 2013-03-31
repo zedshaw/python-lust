@@ -8,6 +8,8 @@ def handle(socket, address):
 
 class Service(server.Simple):
 
+    name = 'geventserver'
+
     def before_jail(self, args):
         from gevent.server import StreamServer
 
@@ -30,7 +32,6 @@ class Service(server.Simple):
 if __name__ == "__main__":
 
     log.setup('/tmp/geventserver.log')
-    server = Service('geventserver', config_base=os.getcwd() + '/examples',
-                     config_name='master')
+    server = Service(config_file=os.getcwd() + '/examples/master.conf')
     server.run(sys.argv)
 

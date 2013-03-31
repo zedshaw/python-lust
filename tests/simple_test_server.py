@@ -10,6 +10,8 @@ RUN_DIR=os.path.join(os.getcwd(), "tests")
 
 class SimpleDaemon(server.Simple):
 
+    name = "tests.simple_test_server"
+
     def before_daemonize(self, args):
         with open("/tmp/before_daemonize.txt", "w") as f:
             f.write("%r" % args)
@@ -34,7 +36,7 @@ class SimpleDaemon(server.Simple):
 
 if __name__ == "__main__":
     # if you're on OSX then change this to whatever user nd group
-    server = SimpleDaemon("simpledaemon", uid='nobody', gid='nogroup', 
+    server = SimpleDaemon(uid='nobody', gid='nogroup', 
                           pid_file_path=RUN_DIR, run_base=RUN_DIR, log_dir=RUN_DIR)
     server.run(sys.argv)
 
