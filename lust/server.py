@@ -5,13 +5,15 @@ import os
 class Simple(object):
 
     name = None
+    should_jail = True
+    should_drop_priv = True
 
     def __init__(self, run_base="/var/run", log_dir="/var/log",
                  pid_file_path="/var/run",
                  uid="nobody", gid="nogroup", config_file=None):
         assert self.name, "You must set the service's name."
 
-        self.config_file = config_file or os.path.join('/etc', self.config + ".conf")
+        self.config_file = config_file or os.path.join('/etc', self.name + ".conf")
         log.debug("Config file at %s" % self.config_file)
 
         if os.path.exists(self.config_file):
@@ -94,14 +96,18 @@ class Simple(object):
 
         unix.register_shutdown(shutdown_handler)
 
-        self.before_jail(args)
+        if self.should_jail:
+            self.before_jail(args)
+            log.info("Setting up the chroot jail to: %s" % self.run_dir)
+            unix.chroot_jail(self.run_dir)
+        else:
+            log.warn("This daemon does not jail itself.")
 
-        log.info("Setting up the chroot jail to: %s" % self.run_dir)
-        unix.chroot_jail(self.run_dir)
-
-        self.before_drop_privs(args)
-
-        unix.drop_privileges(self.unum, self.gnum)
+        if self.should_drop_priv:
+            self.before_drop_privs(args)
+            unix.drop_privileges(self.unum, self.gnum)
+        else:
+            log.warn("This daemon does not drop privileges.")
 
         log.info("Server %s running." % self.name)
         self.start(args)
