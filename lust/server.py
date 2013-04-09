@@ -13,24 +13,16 @@ class Simple(object):
                  uid="nobody", gid="nogroup", config_file=None):
         assert self.name, "You must set the service's name."
 
-        self.config_file = config_file or os.path.join('/etc', self.name + ".conf")
-        log.debug("Config file at %s" % self.config_file)
+        config_file = config_file or os.path.join('/etc', self.name + ".conf")
+        self.load_config(config_file)
+        self.run_dir = self.get('run_dir') or os.path.join(run_base, self.name)
+        self.pid_path = self.get('pid_path') or pid_file_path
+        self.log_file = self.get('log_file') or os.path.join(log_dir, self.name + ".log")
+        self.uid = self.get('uid') or uid
+        self.gid = self.get('gid') or gid
+        self.run_dir_mode = self.get('run_dir_mode') or '0700'
+        self.run_dir_mode = int(self.run_dir_mode, 8)
 
-        if os.path.exists(self.config_file):
-            self.config = config.load_ini_file(self.config_file)
-            log.debug("Loading config file %s contains %r" % (self.config_file,
-                                                              self.config))
-        else:
-            log.warn("No config file at %s, using defaults." % self.config_file)
-            self.config = {}
-
-        self.run_dir = self.config.get(self.name + '.run_dir',
-                                       os.path.join(run_base, self.name))
-        self.pid_path = self.config.get(self.name + '.pid_path', pid_file_path)
-        self.log_file = self.config.get(self.name + '.log_file',
-                                        os.path.join(log_dir, self.name + ".log"))
-        self.uid = self.config.get(self.name + '.uid', uid)
-        self.gid = self.config.get(self.name + '.gid', gid)
         log.debug("UID and GID are %s:%s" % (self.uid, self.gid))
 
         self.unum, self.gnum = unix.get_user_info(self.uid, self.gid)
@@ -62,10 +54,8 @@ class Simple(object):
         print "Server running at pid %d" % unix.pid_read(self.name,
                                                          pid_file_path=self.pid_path)
 
-
     def shutdown(self, signal):
         pass
-
 
 
     def parse_cli(self, args):
@@ -96,12 +86,23 @@ class Simple(object):
 
         unix.register_shutdown(shutdown_handler)
 
+        if not os.path.exists(self.run_dir):
+            log.warn("Directory %s does not exist, attempting to create it." %
+                     self.run_dir)
+            os.mkdir(self.run_dir)
+
+            log.info("Giving default permissions to %s, change them later if you need."
+                     % self.run_dir)
+            os.chown(self.run_dir, self.unum, self.gnum)
+            os.chmod(self.run_dir, self.run_dir_mode)
+
         if self.should_jail:
             self.before_jail(args)
             log.info("Setting up the chroot jail to: %s" % self.run_dir)
             unix.chroot_jail(self.run_dir)
         else:
-            log.warn("This daemon does not jail itself.")
+            log.warn("This daemon does not jail itself, chdir to %s instead" % self.run_dir)
+            os.chdir(self.run_dir)
 
         if self.should_drop_priv:
             self.before_drop_privs(args)
@@ -131,4 +132,16 @@ class Simple(object):
         name to get a config value."""
 
         return self.config.get(self.name + '.' + name, None)
+
+    def load_config(self, config_file):
+        self.config_file = config_file
+        log.debug("Config file at %s" % self.config_file)
+
+        if os.path.exists(self.config_file):
+            self.config = config.load_ini_file(self.config_file)
+            log.debug("Loading config file %s contains %r" % (self.config_file,
+                                                              self.config))
+        else:
+            log.warn("No config file at %s, using defaults." % self.config_file)
+            self.config = {}
 
